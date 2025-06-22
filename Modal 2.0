@@ -1,0 +1,872 @@
+// Complete React + Node.js Implementation
+
+// ======================
+// 1. FRONTEND (React.js)
+// ======================
+
+// src/App.js (Main Application)
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import Papers from './pages/Papers';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
+import MobileAdSticky from './components/MobileAdSticky';
+
+function App() {
+  return (
+    <Router>
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/papers" element={<Papers />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          </Routes>
+        </main>
+        <Footer />
+        <MobileAdSticky />
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+// src/components/Header.js
+import React from 'react';
+import AdBanner from './AdBanner';
+import SearchBar from './SearchBar';
+
+function Header() {
+  return (
+    <header className="bg-white shadow-sm">
+      <AdBanner location="header" />
+      <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center">
+        <div className="flex items-center mb-4 md:mb-0">
+          <h1 className="text-xl font-bold text-blue-800">ExamPapers</h1>
+        </div>
+        <SearchBar />
+        <nav className="hidden md:block">
+          <ul className="flex space-x-6">
+            <li><a href="/" className="hover:text-blue-600">Home</a></li>
+            <li><a href="/papers" className="hover:text-blue-600">Browse Papers</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+export default Header;
+
+// src/components/SearchBar.js
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function SearchBar() {
+  const [query, setQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (query.trim()) {
+      navigate(`/papers?search=${encodeURIComponent(query)}`);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSearch} className="w-full md:w-auto md:mx-4">
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Search by subject, year or exam..."
+          className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button
+          type="submit"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-1 rounded-full hover:bg-blue-700"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+      </div>
+    </form>
+  );
+}
+
+export default SearchBar;
+
+// src/components/AdBanner.js
+import React from 'react';
+
+function AdBanner({ location }) {
+  const adConfig = {
+    header: {
+      class: 'w-full h-20 bg-gray-100 flex items-center justify-center',
+      text: 'Header Banner Ad (728x90)'
+    },
+    sidebar: {
+      class: 'w-full aspect-[1/4] bg-gray-100 flex items-center justify-center mb-4',
+      text: 'Sidebar Ad (300x600)'
+    },
+    inline: {
+      class: 'w-full h-32 my-6 bg-gray-100 flex items-center justify-center',
+      text: 'Inline Ad (728x90)'
+    },
+    footer: {
+      class: 'w-full h-20 mt-6 bg-gray-100 flex items-center justify-center',
+      text: 'Footer Ad (728x90)'
+    },
+    'mobile-sticky': {
+      class: 'w-full h-16 bg-gray-100 flex items-center justify-center',
+      text: 'Mobile Sticky Ad (320x50)'
+    }
+  };
+
+  return (
+    <div className={`${adConfig[location].class} rounded border border-gray-200`}>
+      <div className="text-gray-500 text-sm">
+        {adConfig[location].text}
+      </div>
+    </div>
+  );
+}
+
+export default AdBanner;
+
+// src/components/PaperCard.js
+import React from 'react';
+
+function PaperCard({ paper }) {
+  return (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+      <div className="p-4">
+        <h3 className="text-lg font-semibold text-blue-800">{paper.title}</h3>
+        <div className="flex justify-between mt-2 text-sm text-gray-600">
+          <span>{paper.category}</span>
+          <span>{paper.year}</span>
+        </div>
+        <div className="mt-4 flex space-x-2">
+          <a 
+            href={paper.fileUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+          >
+            View
+          </a>
+          <a 
+            href={paper.fileUrl} 
+            download
+            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+          >
+            Download
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default PaperCard;
+
+// src/components/MobileAdSticky.js
+import React from 'react';
+import AdBanner from './AdBanner';
+
+function MobileAdSticky() {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg lg:hidden">
+      <AdBanner location="mobile-sticky" />
+    </div>
+  );
+}
+
+export default MobileAdSticky;
+
+// src/components/Footer.js
+import React from 'react';
+import AdBanner from './AdBanner';
+
+function Footer() {
+  return (
+    <footer className="bg-gray-800 text-white mt-8">
+      <div className="container mx-auto px-4 py-8">
+        <AdBanner location="footer" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-2">
+              <li><a href="/" className="hover:text-blue-300">Home</a></li>
+              <li><a href="/papers" className="hover:text-blue-300">Question Papers</a></li>
+              <li><a href="/about" className="hover:text-blue-300">About Us</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Categories</h3>
+            <ul className="space-y-2">
+              <li><a href="/papers?category=BSc" className="hover:text-blue-300">BSc Papers</a></li>
+              <li><a href="/papers?category=BA" className="hover:text-blue-300">BA Papers</a></li>
+              <li><a href="/papers?category=BCom" className="hover:text-blue-300">BCom Papers</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Contact</h3>
+            <p>Email: support@exampapers.com</p>
+          </div>
+        </div>
+        <div className="border-t border-gray-700 mt-8 pt-6 text-center text-sm">
+          &copy; {new Date().getFullYear()} ExamPapers. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export default Footer;
+
+// src/pages/Home.js
+import React from 'react';
+import AdBanner from '../components/AdBanner';
+
+function Home() {
+  const categories = [
+    { name: 'BSc', count: 1245 },
+    { name: 'BA', count: 876 },
+    { name: 'BCom', count: 932 },
+    { name: 'Engineering', count: 567 },
+    { name: 'Medical', count: 321 },
+    { name: 'Law', count: 210 }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="bg-blue-700 text-white py-12 md:py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">Previous Year Question Papers</h1>
+          <p className="text-xl md:text-2xl mb-8">Access thousands of question papers for your exam preparation</p>
+        </div>
+      </div>
+
+      {/* Main Ad Banner */}
+      <AdBanner location="header" />
+
+      {/* Category Sections */}
+      <div className="container mx-auto px-4 py-8">
+        <h2 className="text-3xl font-bold mb-6 text-center">Browse Question Papers</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category, index) => (
+            <div key={index} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <h3 className="text-xl font-semibold text-blue-800 mb-2">{category.name}</h3>
+              <p className="text-gray-600">{category.count} papers available</p>
+              <a 
+                href={`/papers?category=${category.name}`} 
+                className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Browse Papers
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Inline Ad */}
+      <div className="container mx-auto px-4">
+        <AdBanner location="inline" />
+      </div>
+
+      {/* Recent Papers Section */}
+      <div className="container mx-auto px-4 py-8">
+        <h2 className="text-3xl font-bold mb-6 text-center">Recently Added Papers</h2>
+        {/* Papers list would be fetched from API */}
+      </div>
+    </div>
+  );
+}
+
+export default Home;
+
+// src/pages/Papers.js
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import PaperCard from '../components/PaperCard';
+import AdBanner from '../components/AdBanner';
+
+function Papers() {
+  const [searchParams] = useSearchParams();
+  const [papers, setPapers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate API call
+    const fetchPapers = async () => {
+      setLoading(true);
+      // In a real app, you would fetch from your backend API
+      const category = searchParams.get('category') || '';
+      const search = searchParams.get('search') || '';
+      
+      // Mock data
+      const mockPapers = [
+        { id: 1, title: 'BSc Mathematics 2023', category: 'BSc', year: 2023, fileUrl: '#' },
+        { id: 2, title: 'BA History 2022', category: 'BA', year: 2022, fileUrl: '#' },
+        { id: 3, title: 'BCom Accounting 2023', category: 'BCom', year: 2023, fileUrl: '#' },
+        { id: 4, title: 'BSc Physics 2021', category: 'BSc', year: 2021, fileUrl: '#' },
+        { id: 5, title: 'BA English 2020', category: 'BA', year: 2020, fileUrl: '#' },
+        { id: 6, title: 'BCom Business 2022', category: 'BCom', year: 2022, fileUrl: '#' },
+      ];
+
+      // Filter based on query params
+      const filteredPapers = mockPapers.filter(paper => {
+        const matchesCategory = category ? paper.category === category : true;
+        const matchesSearch = search ? 
+          paper.title.toLowerCase().includes(search.toLowerCase()) : true;
+        return matchesCategory && matchesSearch;
+      });
+
+      setTimeout(() => {
+        setPapers(filteredPapers);
+        setLoading(false);
+      }, 500);
+    };
+
+    fetchPapers();
+  }, [searchParams]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content */}
+          <div className="lg:w-3/4">
+            <h1 className="text-3xl font-bold mb-6">Question Papers</h1>
+            
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : papers.length > 0 ? (
+              <div className="space-y-6">
+                {papers.map((paper, index) => (
+                  <React.Fragment key={paper.id}>
+                    <PaperCard paper={paper} />
+                    {/* Show ad after every 3rd paper */}
+                    {(index + 1) % 3 === 0 && (
+                      <AdBanner location="inline" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                <p className="text-lg">No papers found matching your criteria.</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Sidebar */}
+          <div className="lg:w-1/4">
+            <div className="bg-white p-4 rounded-lg shadow-md sticky top-4">
+              <h2 className="text-xl font-semibold mb-4">Filter Papers</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium mb-2">By Category</h3>
+                  <ul className="space-y-2">
+                    <li><a href="/papers?category=BSc" className="text-blue-600 hover:underline">BSc</a></li>
+                    <li><a href="/papers?category=BA" className="text-blue-600 hover:underline">BA</a></li>
+                    <li><a href="/papers?category=BCom" className="text-blue-600 hover:underline">BCom</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-medium mb-2">By Year</h3>
+                  <ul className="space-y-2">
+                    <li><a href="/papers?year=2023" className="text-blue-600 hover:underline">2023</a></li>
+                    <li><a href="/papers?year=2022" className="text-blue-600 hover:underline">2022</a></li>
+                    <li><a href="/papers?year=2021" className="text-blue-600 hover:underline">2021</a></li>
+                  </ul>
+                </div>
+              </div>
+              
+              {/* Sidebar Ad */}
+              <div className="mt-6">
+                <AdBanner location="sidebar" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Papers;
+
+// src/pages/AdminLogin.js
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function AdminLogin() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if(email === 'sandeepkasi80@gmail.com' && password === 'Khatu0927') {
+      // Successful login
+      navigate('/admin/dashboard');
+    } else {
+      alert('Invalid credentials');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+        <form onSubmit={handleLogin}>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2" htmlFor="email">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              className="w-full px-3 py-2 border rounded"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2" htmlFor="password">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              className="w-full px-3 py-2 border rounded"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          >
+            Login
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default AdminLogin;
+
+// src/pages/AdminDashboard.js
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function AdminDashboard() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('upload');
+  const [ads, setAds] = useState({
+    header: { enabled: true, code: '' },
+    sidebar: { enabled: true, code: '' },
+    inline: { enabled: true, frequency: 3, code: '' },
+    footer: { enabled: true, code: '' },
+    mobileSticky: { enabled: false, code: '' }
+  });
+
+  const [file, setFile] = useState(null);
+  const [paperData, setPaperData] = useState({
+    title: '',
+    category: 'BSc',
+    year: new Date().getFullYear()
+  });
+
+  const handleLogout = () => {
+    navigate('/admin');
+  };
+
+  const handleAdSave = () => {
+    alert('Ad settings saved successfully!');
+  };
+
+  const handlePaperSubmit = (e) => {
+    e.preventDefault();
+    alert('Paper uploaded successfully!');
+    // Reset form
+    setFile(null);
+    setPaperData({
+      title: '',
+      category: 'BSc',
+      year: new Date().getFullYear()
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <div className="bg-blue-800 text-white p-4 shadow-md">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-xl font-bold">Admin Dashboard</h1>
+          <button 
+            onClick={handleLogout}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div className="container mx-auto p-4">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Sidebar */}
+          <div className="md:w-1/4 bg-white p-4 rounded-lg shadow-md">
+            <ul className="space-y-2">
+              <li>
+                <button
+                  onClick={() => setActiveTab('upload')}
+                  className={`w-full text-left px-4 py-2 rounded ${activeTab === 'upload' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'}`}
+                >
+                  Upload Papers
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => setActiveTab('ads')}
+                  className={`w-full text-left px-4 py-2 rounded ${activeTab === 'ads' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'}`}
+                >
+                  Advertisement
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`w-full text-left px-4 py-2 rounded ${activeTab === 'settings' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'}`}
+                >
+                  Website Settings
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Main Content */}
+          <div className="md:w-3/4">
+            {activeTab === 'upload' && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-semibold mb-4">Upload New Question Paper</h2>
+                <form onSubmit={handlePaperSubmit}>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">Title</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded"
+                      value={paperData.title}
+                      onChange={(e) => setPaperData({...paperData, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-gray-700 mb-2">Category</label>
+                      <select
+                        className="w-full px-3 py-2 border rounded"
+                        value={paperData.category}
+                        onChange={(e) => setPaperData({...paperData, category: e.target.value})}
+                      >
+                        <option value="BSc">BSc</option>
+                        <option value="BA">BA</option>
+                        <option value="BCom">B.Com</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-gray-700 mb-2">Year</label>
+                      <input
+                        type="number"
+                        className="w-full px-3 py-2 border rounded"
+                        value={paperData.year}
+                        onChange={(e) => setPaperData({...paperData, year: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">File (PDF/Image)</label>
+                    <input
+                      type="file"
+                      className="w-full px-3 py-2 border rounded"
+                      onChange={(e) => setFile(e.target.files[0])}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      required
+                    />
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+                  >
+                    Upload
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {activeTab === 'ads' && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-semibold mb-4">Advertisement Management</h2>
+                <div className="space-y-6">
+                  {/* Header Ad */}
+                  <div className="bg-gray-50 p-4 rounded">
+                    <h3 className="text-lg font-semibold mb-2">Header Banner Ad</h3>
+                    <label className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        checked={ads.header.enabled}
+                        onChange={() => setAds({...ads, header: {...ads.header, enabled: !ads.header.enabled}})}
+                        className="mr-2"
+                      />
+                      Enable Header Ad
+                    </label>
+                    <textarea
+                      className="w-full h-24 p-2 border rounded"
+                      placeholder="Paste ad code here..."
+                      value={ads.header.code}
+                      onChange={(e) => setAds({...ads, header: {...ads.header, code: e.target.value}}}
+                    />
+                  </div>
+
+                  {/* Sidebar Ad */}
+                  <div className="bg-gray-50 p-4 rounded">
+                    <h3 className="text-lg font-semibold mb-2">Sidebar Ad</h3>
+                    <label className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        checked={ads.sidebar.enabled}
+                        onChange={() => setAds({...ads, sidebar: {...ads.sidebar, enabled: !ads.sidebar.enabled}})}
+                        className="mr-2"
+                      />
+                      Enable Sidebar Ad
+                    </label>
+                    <textarea
+                      className="w-full h-24 p-2 border rounded"
+                      placeholder="Paste ad code here..."
+                      value={ads.sidebar.code}
+                      onChange={(e) => setAds({...ads, sidebar: {...ads.sidebar, code: e.target.value}}}
+                    />
+                  </div>
+
+                  {/* Inline Ads */}
+                  <div className="bg-gray-50 p-4 rounded">
+                    <h3 className="text-lg font-semibold mb-2">Inline Ads</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="flex items-center mb-2">
+                          <input
+                            type="checkbox"
+                            checked={ads.inline.enabled}
+                            onChange={() => setAds({...ads, inline: {...ads.inline, enabled: !ads.inline.enabled}})}
+                            className="mr-2"
+                          />
+                          Enable Inline Ads
+                        </label>
+                        <div className="mb-2">
+                          <label className="block mb-1">Show after every:</label>
+                          <select
+                            className="border rounded p-1"
+                            value={ads.inline.frequency}
+                            onChange={(e) => setAds({...ads, inline: {...ads.inline, frequency: parseInt(e.target.value)}})}
+                          >
+                            {[2, 3, 4, 5].map(num => (
+                              <option key={num} value={num}>{num} papers</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <textarea
+                        className="w-full h-24 p-2 border rounded"
+                        placeholder="Paste ad code here..."
+                        value={ads.inline.code}
+                        onChange={(e) => setAds({...ads, inline: {...ads.inline, code: e.target.value}}}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <button
+                    onClick={handleAdSave}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Save Ad Settings
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-semibold mb-4">Website Settings</h2>
+                <p>Website theme, colors, and other settings can be configured here.</p>
+                {/* Additional settings form would go here */}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default AdminDashboard;
+
+// ======================
+// 2. BACKEND (Node.js)
+// ======================
+
+// server.js
+const express = require('express');
+const mongoose = require('mongoose');
+const multer = require('multer');
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('MongoDB connection error:', err));
+
+// Paper Model
+const PaperSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  category: { type: String, required: true },
+  year: { type: Number, required: true },
+  fileUrl: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Paper = mongoose.model('Paper', PaperSchema);
+
+// File Upload Configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
+
+// Routes
+app.post('/api/papers', upload.single('file'), async (req, res) => {
+  try {
+    const { title, category, year } = req.body;
+    const fileUrl = `/uploads/${req.file.filename}`;
+
+    const paper = new Paper({
+      title,
+      category,
+      year,
+      fileUrl
+    });
+
+    await paper.save();
+    res.status(201).json(paper);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/papers', async (req, res) => {
+  try {
+    const { category, year, search } = req.query;
+    const query = {};
+
+    if (category) query.category = category;
+    if (year) query.year = year;
+    if (search) query.title = { $regex: search, $options: 'i' };
+
+    const papers = await Paper.find(query).sort({ year: -1 });
+    res.json(papers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Admin Authentication
+app.post('/api/admin/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+    res.json({ success: true, token: 'admin-auth-token' });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
+});
+
+// Start Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// ======================
+// 3. ENVIRONMENT CONFIG
+// ======================
+
+// .env
+MONGODB_URI=mongodb://localhost:27017/exampapers
+ADMIN_EMAIL=sandeepkasi80@gmail.com
+ADMIN_PASSWORD=Khatu0927
+PORT=5000
+
+// ======================
+// 4. PACKAGE.JSON
+// ======================
+
+{
+  "name": "exampapers",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^7.4.3",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "nodemon": "^3.0.1"
+  }
+}
